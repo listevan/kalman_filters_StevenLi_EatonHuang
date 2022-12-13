@@ -9,7 +9,7 @@ SETUP (calibrate WT901 if needed):
 1. Downlaod Arduino IDE (1.x version)
 2. Install ArduSpreadsheet for the IDE (https://circuitjournal.com/arduino-serial-to-spreadsheet)
 3. Build the following circuit and connect the arduino a laptop:
-<img width="927" alt="Screenshot 2022-12-11 at 8 09 59 PM" src="https://user-images.githubusercontent.com/74156687/207230943-3ea457b0-d0be-4b17-8df2-d0849722856d.png">
+![Screen Shot 2022-12-12 at 8 27 11 PM](https://user-images.githubusercontent.com/74156687/207231143-5069183a-7d4d-4052-871e-f9ed2eb9f9c7.jpeg)
 4. Disconnect RX-TX pin and upload the code; after uploading, plug it back in and run ArduSpreadsheet
 5. When the value in column A reaches 9.90, you can unplug the Arduino. Save the data as a csv to this folder.
 6. If you want to plot the Actual values, measure the distance travelled in the x and y directions.
