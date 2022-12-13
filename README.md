@@ -5,6 +5,7 @@ For part of our first semester project, we decided to write an algorithm that ca
 Our project centers around torpedo localization, where GPS signal is unable to help with localization. The object is expected to travel at a constant velocity and an accelerometer will be used to constantly measure the acceleration of an object. In this case, inevitable acceleration is incorporated as error. This measurement will serve as an input to a Kalman Filter, which will reduce the noise and error. In the end, a predicted position along with a bivariate normal (3d Gaussian curve or nomal curve) will be generated.
 
 To fully run this code you will need an Arduino UNO r3, WitMotion WT901, a usb-b to usb-a (or whatever your laptop needs), a serial converter, and a windowsOS (for calibration).
+
 SETUP (calibrate WT901 if needed): 
 1. Downlaod Arduino IDE (1.x version)
 2. Install ArduSpreadsheet for the IDE (https://circuitjournal.com/arduino-serial-to-spreadsheet)
