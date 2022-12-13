@@ -146,8 +146,8 @@ y_pos = [x[0] for x in muys]
 Σ = np.matrix(Σ)
 x_hat = np.matrix([muxs[-1][0],muys[-1][0]]).T
 Z = gen_gaussian_plot_vals(x_hat, Σ)
-ax.contourf(X, Y, Z, 6, alpha=0.6, cmap=cm.jet)
-cs = ax.contour(X, Y, Z, 6, colors="black")
+ax.contourf(X, Y, Z, 10, alpha=0.6, cmap=cm.jet)
+cs = ax.contour(X, Y, Z, 10, colors="black")
 ax.clabel(cs, inline=1, fontsize=10)
 
 #plotting actual(green), predicted(red), and calculated(using physics and blue) points
