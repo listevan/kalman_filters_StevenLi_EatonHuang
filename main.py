@@ -10,7 +10,16 @@ def variance(arr):
     sqdiff = np.sum([float((x-mean)**2) for x in arr])
     return float(sqdiff)/len(arr)
 
-data = np.loadtxt("example_data6.csv", delimiter=",", dtype=str)
+
+#variables:
+DT = 0.1 #interval of time
+NUM_STEPS = 100 #number of updates or time intervals
+MEAS_EVERY_STEPS = 1 #how many steps before an update
+expected_vx = 0.16002 #needs to be set, if distance was travelled at a constant velocity (.16002 for example_data, .09652 for example_data2 and example_data3)
+expected_vy = 0.66294 #needs to be set, if distance was travelled at a constant velocity (.66294 for example_data, .57785 for example_data2 and example_data3)
+data_path = "example_data.csv" # change example_data6.csv to your csv
+
+data = np.loadtxt(data_path, delimiter=",", dtype=str) 
 t = [float(x[0]) for x in data]
 ax = [float(x[1]) for x in data]
 ay = [float(x[2]) for x in data]
@@ -22,16 +31,8 @@ plt.figure()
 
 
 
-
 #KF:
 #velocity should be constant so any acceleration is error
-#variables:
-DT = 0.1
-NUM_STEPS = 100
-MEAS_EVERY_STEPS = 1
-expected_vx = 0.16002 #needs to be set, if distance was travelled at a constant velocity (.16002 for example data 6)
-expected_vy = .66294 #needs to be set, if distance was travelled at a constant velocity speed (.66294 for example 6)
-
 #x direction, units in SI
 meas_variancex = axvar
 initial_vx = 0 
@@ -104,14 +105,14 @@ plt.plot([mu[1] + 2*np.sqrt(cov[1,1]) for mu, cov in zip(muxs,covxs)], 'r--')
 plt.subplot(2, 2, 3)
 plt.title('Position(y)')
 plt.plot([mu[0] for mu in muys], 'r')
-plt.plot(real_xs, 'b')
+plt.plot(real_ys, 'b')
 plt.plot([mu[0] - 2*np.sqrt(cov[0,0]) for mu, cov in zip(muys,covys)], 'r--')
 plt.plot([mu[0] + 2*np.sqrt(cov[0,0]) for mu, cov in zip(muys,covys)], 'r--')
 
 plt.subplot(2, 2, 4)
 plt.title('Velocity(y)')
-plt.plot(real_vxs, 'b')
-plt.plot([mu[1] for mu in muxs], 'r')
+plt.plot(real_vys, 'b')
+plt.plot([mu[1] for mu in muys], 'r')
 plt.plot([mu[1] - 2*np.sqrt(cov[1,1]) for mu, cov in zip(muys,covys)], 'r--')
 plt.plot([mu[1] + 2*np.sqrt(cov[1,1]) for mu, cov in zip(muys,covys)], 'r--')
 
@@ -135,8 +136,8 @@ def gen_gaussian_plot_vals(μ, C):
 fig, ax = plt.subplots(figsize=(10, 8))
 ax.grid()
 
-x_grid = np.linspace(1.5, 4, 100)
-y_grid = np.linspace(6.5, 14.3, 100)
+x_grid = np.linspace(1.5, 2, 100)
+y_grid = np.linspace(6.5, 8.3, 100)
 X, Y = np.meshgrid(x_grid, y_grid)
 
 x_pos = [x[0] for x in muxs]
@@ -152,13 +153,14 @@ ax.clabel(cs, inline=1, fontsize=10)
 #plotting actual(green), predicted(red), and calculated(using physics and blue) points
 plt.plot([real_xs[-1]], [real_ys[-1]], marker="o", markersize=5, markeredgecolor="green",markerfacecolor="green")
 plt.plot([x_pos[-1]], [y_pos[-1]], marker="o", markersize=5, markeredgecolor="red",markerfacecolor="red")
-pp = physicsPredictor("example_data6.csv", expected_vx, expected_vy)
-plt.plot(pp.predict()[0], pp.predict()[1], marker="o", markersize=5, markeredgecolor="blue",markerfacecolor="blue")
+pp = physicsPredictor(data_path, expected_vx, expected_vy)
+calculated_pos = pp.predict()
+plt.plot(calculated_pos[0], calculated_pos[1], marker="o", markersize=5, markeredgecolor="blue",markerfacecolor="blue")
 
 #print all final guesses/value
 print("predicted coordinates: ", [x_pos[-1], y_pos[-1]])
 print("actual coordinates: ", [real_xs[-1], real_ys[-1]])
-print("calculated coordinates: ", pp.predict())
+print("calculated coordinates: ", calculated_pos[0], calculated_pos[1])
 
 plt.show()
 plt.ginput(100)
