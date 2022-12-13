@@ -5,11 +5,11 @@ import matplotlib.cm as cm
 import matplotlib as mpl
 from physicsEquations import physicsPredictor
 
+#finding variance from an array
 def variance(arr):
     mean = float(np.sum(arr))/len(arr)
     sqdiff = np.sum([float((x-mean)**2) for x in arr])
     return float(sqdiff)/len(arr)
-
 
 #variables:
 DT = 0.1 #interval of time
@@ -20,10 +20,10 @@ expected_vy = 0.66294 #needs to be set, if distance was travelled at a constant 
 data_path = "example_data.csv" # change example_data6.csv to your csv
 
 data = np.loadtxt(data_path, delimiter=",", dtype=str) 
-t = [float(x[0]) for x in data]
+t = [float(x[0]) for x in data] #extracting data from csv
 ax = [float(x[1]) for x in data]
 ay = [float(x[2]) for x in data]
-axvar = variance(ax)
+axvar = variance(ax) #finding variance in acceleration (error)
 ayvar = variance(ay)
 plt.ion()
 plt.figure()
@@ -39,22 +39,22 @@ initial_vx = 0
 estimated_vx = expected_vx #depends on your testing
 meas_x=0.0
 kf = KF(initial_x=meas_x, initial_v=estimated_vx, accel_variance=axvar)
-muxs = []
-covxs = []
-real_xs = []
-real_vxs = []
+muxs = [] #mean x and v values
+covxs = [] #covariance between x and v
+real_xs = [] #actual x, constant velocity
+real_vxs = [] #actual v, constant velocity
 
 for step in range(NUM_STEPS):    
     covxs.append(kf.cov)
     muxs.append(kf.mean)
-    
-    kf.predict(dt=DT)
 
-    estimated_vx = ax[step]*DT+estimated_vx
-    meas_x = meas_x+DT*estimated_vx
-    kf.update(meas_value=meas_x, meas_variance=meas_variancex)
+    kf.predict(dt=DT) #predict
 
-    real_xs.append(expected_vx*step*DT)
+    estimated_vx = ax[step]*DT+estimated_vx #finding measurements using error (if none then estimated_vx = expected_vx)
+    meas_x = meas_x+DT*estimated_vx 
+    kf.update(meas_value=meas_x, meas_variance=meas_variancex) #update
+
+    real_xs.append(expected_vx*step*DT) #finding real x using constant velocity
     real_vxs.append(expected_vx)
     
 #y direction, units in SI
@@ -63,22 +63,22 @@ initial_vy = 0
 estimated_vy = expected_vy #depends on your testing
 meas_y=0.0
 kf2 = KF(initial_x=meas_y, initial_v=estimated_vy, accel_variance=ayvar)
-muys = []
-covys = []
-real_ys = []
-real_vys = []
+muys = [] #same as above but for y
+covys = [] #same as above but for y
+real_ys = [] #same as above but for y
+real_vys = [] #same as above but for y
 
 for step in range(NUM_STEPS):
     covys.append(kf2.cov)
     muys.append(kf2.mean)
     
-    kf2.predict(dt=DT)
+    kf2.predict(dt=DT) #predict
 
-    estimated_vy = ay[step]*DT+estimated_vy
-    meas_y = meas_y+DT*estimated_vy
-    kf2.update(meas_value=meas_y, meas_variance=meas_variancey)
+    estimated_vy = ay[step]*DT+estimated_vy #same as above but for y
+    meas_y = meas_y+DT*estimated_vy 
+    kf2.update(meas_value=meas_y, meas_variance=meas_variancey) #update
 
-    real_ys.append(expected_vy*step*DT)
+    real_ys.append(expected_vy*step*DT) #same as above but for y
     real_vys.append(expected_vy)
 
 
@@ -91,7 +91,7 @@ plt.subplot(2, 2, 1)
 plt.title('Position(x)')
 plt.plot([mu[0] for mu in muxs], 'r')
 plt.plot(real_xs, 'b')
-plt.plot([mu[0] - 2*np.sqrt(cov[0,0]) for mu, cov in zip(muxs,covxs)], 'r--')
+plt.plot([mu[0] - 2*np.sqrt(cov[0,0]) for mu, cov in zip(muxs,covxs)], 'r--') #+-2 standard deviations away -> 95th percentile
 plt.plot([mu[0] + 2*np.sqrt(cov[0,0]) for mu, cov in zip(muxs,covxs)], 'r--')
 
 plt.subplot(2, 2, 2)
@@ -142,12 +142,12 @@ X, Y = np.meshgrid(x_grid, y_grid)
 
 x_pos = [x[0] for x in muxs]
 y_pos = [x[0] for x in muys]
-Σ = np.cov(np.array([x_pos,y_pos]), bias=True)
+Σ = np.cov(np.array([x_pos,y_pos]), bias=True) #solving for our covariance matrix
 Σ = np.matrix(Σ)
 x_hat = np.matrix([muxs[-1][0],muys[-1][0]]).T
 Z = gen_gaussian_plot_vals(x_hat, Σ)
-ax.contourf(X, Y, Z, 10, alpha=0.6, cmap=cm.jet)
-cs = ax.contour(X, Y, Z, 10, colors="black")
+ax.contourf(X, Y, Z, 10, alpha=0.6, cmap=cm.jet) #contor fill
+cs = ax.contour(X, Y, Z, 10, colors="black") #contour lines
 ax.clabel(cs, inline=1, fontsize=10)
 
 #plotting actual(green), predicted(red), and calculated(using physics and blue) points

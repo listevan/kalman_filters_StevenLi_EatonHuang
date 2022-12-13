@@ -18,14 +18,14 @@ class physicsPredictor:
         #x direction
         calculated_x = 0
         for step in range(self.NUM_STEPS):
-            self.expected_v[0]+=self.ax[step]*self.DT
-            calculated_x+=self.expected_v[0]*self.DT
+            self.expected_v[0]+=self.ax[step]*self.DT #update vx
+            calculated_x+=self.expected_v[0]*self.DT #update x
 
         #y direction
         calculated_y = 0
         for step in range(self.NUM_STEPS):
-            self.expected_v[1]+=self.ay[step]*self.DT
-            calculated_y+=self.expected_v[1]*self.DT
+            self.expected_v[1]+=self.ay[step]*self.DT #update vy
+            calculated_y+=self.expected_v[1]*self.DT #update y
 
         return [[calculated_x],[calculated_y]]
 

@@ -3,15 +3,16 @@
 
 void setup() {
   Serial.begin(9600);
-  delay(10000);
+  delay(10000); //10 seconds delay for time to start ArduSpreadsheet + reconnect RX-TX pins
 
   // Data collection: collect 10 seconds of acceleration data (in x direction) with a 100ms interval
-  Serial.println("Data Collection Started");
-  Serial.println("Time,Accel(x),Accel(y)");
+  // Download the ArduSpreadsheet tool for arduino and use it to save the data as a csv
+  
   for (int i = 0; i < 100; i++) {
     serialEvent();
-    float ax = ((float)JY901.stcAcc.a[0] / 32768 * 16);
-    float ay = ((float)JY901.stcAcc.a[1] / 32768 * 16);
+    // the extra stuff (sin/cos) accounts for gravitational acceleration
+    float ax = ((float)JY901.stcAcc.a[0] / 32768 * 16)+sin((float)JY901.stcAngle.Angle[1]/32768*180*1000/57296);
+    float ay = ((float)JY901.stcAcc.a[1] / 32768 * 16)-sin((float)JY901.stcAngle.Angle[0]/32768*180*1000/57296);
     float t = i * .1;
     Serial.print(t);
     Serial.print(",");
@@ -21,10 +22,10 @@ void setup() {
     Serial.println();
     delay(100);
   }
-  Serial.println("Data Collection Finished");
 }
 
 void loop() {
+  //only need data collection to run once
 }
 
 void serialEvent() {
