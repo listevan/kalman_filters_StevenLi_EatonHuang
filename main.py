@@ -136,7 +136,7 @@ def gen_gaussian_plot_vals(μ, C):
 fig, ax = plt.subplots(figsize=(10, 8))
 ax.grid()
 
-x_grid = np.linspace(1.5, 2, 100)
+x_grid = np.linspace(1.5, 2, 100) #might need to change this to fit your data
 y_grid = np.linspace(6.5, 8.3, 100)
 X, Y = np.meshgrid(x_grid, y_grid)
 
