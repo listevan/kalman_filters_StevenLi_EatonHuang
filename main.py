@@ -3,7 +3,9 @@ import matplotlib.pyplot as plt
 from kf import KF
 import matplotlib.cm as cm
 import matplotlib as mpl
+from scipy.stats import multivariate_normal
 from physicsEquations import physicsPredictor
+
 
 #finding variance from an array
 def variance(arr):
@@ -25,9 +27,6 @@ ax = [float(x[1]) for x in data]
 ay = [float(x[2]) for x in data]
 axvar = variance(ax) #finding variance in acceleration (error)
 ayvar = variance(ay)
-plt.ion()
-plt.figure()
-
 
 
 
@@ -50,8 +49,8 @@ for step in range(NUM_STEPS):
 
     kf.predict(dt=DT) #predict
 
-    estimated_vx = ax[step]*DT+estimated_vx #finding measurements using error (if none then estimated_vx = expected_vx)
-    meas_x = meas_x+DT*estimated_vx 
+    estimated_vx = ax[step]*DT+muxs[-1][1] #finding measurements using error (if none then estimated_vx = expected_vx)
+    meas_x = muxs[-1][0]+DT*estimated_vx 
     kf.update(meas_value=meas_x, meas_variance=meas_variancex) #update
 
     real_xs.append(expected_vx*step*DT) #finding real x using constant velocity
@@ -74,8 +73,8 @@ for step in range(NUM_STEPS):
     
     kf2.predict(dt=DT) #predict
 
-    estimated_vy = ay[step]*DT+estimated_vy #same as above but for y
-    meas_y = meas_y+DT*estimated_vy 
+    estimated_vy = ay[step]*DT+muys[-1][1] #same as above but for y
+    meas_y = muys[-1][0]+DT*estimated_vy 
     kf2.update(meas_value=meas_y, meas_variance=meas_variancey) #update
 
     real_ys.append(expected_vy*step*DT) #same as above but for y
@@ -87,6 +86,7 @@ for step in range(NUM_STEPS):
 
 #Graphing:
 #Graphing predicted vs real and showing 95th percentile for x-axis
+plt.figure()
 plt.subplot(2, 2, 1)
 plt.title('Position(x)')
 plt.plot([mu[0] for mu in muxs], 'r')
@@ -116,39 +116,30 @@ plt.plot([mu[1] for mu in muys], 'r')
 plt.plot([mu[1] - 2*np.sqrt(cov[1,1]) for mu, cov in zip(muys,covys)], 'r--')
 plt.plot([mu[1] + 2*np.sqrt(cov[1,1]) for mu, cov in zip(muys,covys)], 'r--')
 
-#Graphing Bivariate Normal Distribution usign contour maps
-def bivariate_normal(x, y, σ_x=1.0, σ_y=1.0, μ_x=0.0, μ_y=0.0, σ_xy=0.0):
-    x_μ = x - μ_x
-    y_μ = y - μ_y
-
-    ρ = σ_xy / (σ_x * σ_y)
-    z = x_μ**2 / σ_x**2 + y_μ**2 / σ_y**2 - 2 * ρ * x_μ * y_μ / (σ_x * σ_y)
-    denom = 2 * np.pi * σ_x * σ_y * np.sqrt(1 - ρ**2)
-    return np.exp(-z / (2 * (1 - ρ**2))) / denom
-
-def gen_gaussian_plot_vals(μ, C):
-    m_x, m_y = float(μ[0]), float(μ[1])
-    s_x, s_y = np.sqrt(C[0, 0]), np.sqrt(C[1, 1])
-    s_xy = C[0, 1]
-    return bivariate_normal(X, Y, s_x, s_y, m_x, m_y, s_xy)
-
+#Graphing Bivariate Normal Distribution using contour maps
 # Plot the contour map of the gaussian curve
-fig, ax = plt.subplots(figsize=(10, 8))
-ax.grid()
-
-x_grid = np.linspace(1.5, 2, 100) #might need to change this to fit your data
-y_grid = np.linspace(6.5, 8.3, 100)
+plt.figure()
+x_grid = np.linspace(1, 2, 100) #might need to change this to fit your data
+y_grid = np.linspace(6, 9, 300)
 X, Y = np.meshgrid(x_grid, y_grid)
-
 x_pos = [x[0] for x in muxs]
-y_pos = [x[0] for x in muys]
-Σ = np.cov(np.array([x_pos,y_pos]), bias=True) #solving for our covariance matrix
-Σ = np.matrix(Σ)
-x_hat = np.matrix([muxs[-1][0],muys[-1][0]]).T
-Z = gen_gaussian_plot_vals(x_hat, Σ)
-ax.contourf(X, Y, Z, 10, alpha=0.6, cmap=cm.jet) #contor fill
-cs = ax.contour(X, Y, Z, 10, colors="black") #contour lines
-ax.clabel(cs, inline=1, fontsize=10)
+y_pos = [y[0] for y in muys]
+Σ = np.array(np.cov(np.array([x_pos,y_pos]), bias=True)+np.matrix([[.01,0],[0,.01]])).tolist() #solving for our covariance matrix
+print ("Covariance matrix of x and y: ")
+print(Σ)
+x_hat = [muxs[-1][0], muys[-1][0]]
+pos = np.dstack((X, Y))
+Z = multivariate_normal.pdf(pos, x_hat, Σ).reshape(X.shape)
+
+ax = plt.axes(projection='3d')
+ax.scatter3D(X, Y, Z, cmap='viridis',linewidth=0);
+ax.set_xlabel('X axis')
+ax.set_ylabel('Y axis')
+ax.set_zlabel('Z axis')
+
+plt.figure()
+plt.contourf(X, Y, Z, levels = 10)
+plt.colorbar()
 
 #plotting actual(green), predicted(red), and calculated(using physics and blue) points
 plt.plot([real_xs[-1]], [real_ys[-1]], marker="o", markersize=5, markeredgecolor="green",markerfacecolor="green")
@@ -163,4 +154,3 @@ print("actual coordinates: ", [real_xs[-1], real_ys[-1]])
 print("calculated coordinates: ", calculated_pos[0], calculated_pos[1])
 
 plt.show()
-plt.ginput(100)
